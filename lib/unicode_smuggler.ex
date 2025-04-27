@@ -1,6 +1,53 @@
 defmodule UnicodeSmuggler do
   @moduledoc """
-  Documentation for `UnicodeSmuggler`.
+  # UnicodeSmuggler
+
+  Because it seemed like a good idea at the time, this is a quick implementation of the ideas in
+  Paul Butler's blog post [Smuggling arbitrary data through an emoji](https://paulbutler.org/2025/smuggling-arbitrary-data-through-an-emoji/)
+  as a small Elixir package.
+
+  UnicodeSmuggler is a simple stenography utility that will hide text by attaching it to any Unicode character
+  as a list of invisible "variation selectors". The character will render as normal in most unicode-compatible
+  applications. UnicodeSmuggler (or anything else compatible with Paul Butler's code) can later be used to extract the hidden text.
+
+  As Paul makes clear this is, at best, an underhand hack and misuse of the Unicode standard. On the other hand,
+  it's an interesting trick, I thought it would be fun to implement, and this library may possibly be of use
+  for detecting such tricks in the wild.
+
+  ## Features
+
+  * Encode text in a Unicode character
+  * Decode text hidden in a Unicode character
+  * Find hidden text in a string
+  * Remove hidden text from a Unicode character
+  * Accidentally confuse JetBrains' IDEs like RubyMine and cause mysterious problems in your own tests
+  * Ducks
+
+  ## Examples
+
+  ### Encoding
+
+  ```elixir
+  UnicodeSmuggler.encode!("Aw yiss!")
+  # => "🦆󠄱󠅧󠄐󠅩󠅙󠅣󠅣"
+  ```
+
+  ### Decoding
+
+  ```elixir
+  UnicodeSmuggler.decode!("🦆󠄱󠅧󠄐󠅩󠅙󠅣󠅣")
+  # => "Aw yiss!"
+  ```
+
+
+  ### Trimming
+
+  ```elixir
+  UnicodeSmuggler.trim("🦆󠄱󠅧󠄐󠅩󠅙󠅣󠅣")
+  |> UnicodeSmuggler.decode!()
+  # => nil
+  ```
+
   """
 
   @doc """
