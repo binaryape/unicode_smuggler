@@ -26,7 +26,7 @@ defmodule UnicodeSmuggler do
     text
     |> String.split("")
     |> Enum.map(fn l -> decode!(l) end)
-    |> Enum.reject(fn s -> s == "" end)
+    |> Enum.reject(fn s -> is_nil(s) end)
   end
 
   @spec smuggling?(text :: binary()) :: boolean()
@@ -36,6 +36,7 @@ defmodule UnicodeSmuggler do
 
   @spec trim(text :: binary()) :: binary()
   def trim(text) do
+    :ok = ensure_single!(text)
     text
     |> String.to_charlist()
     |> Enum.take(1)
@@ -67,7 +68,7 @@ defmodule UnicodeSmuggler do
     917760 + (byte - 16)
   end
 
-  defp byte_to_vs(byte) do
+  defp byte_to_vs(_) do
     raise "Incorrect value - please pass a byte, not a codepoint"
   end
 
