@@ -3,28 +3,57 @@ defmodule UnicodeSmuggler do
   Documentation for `UnicodeSmuggler`.
   """
 
-  def encode(text, container \\ "🦆") do
-    (for <<b :: 8 <- text>>, do: b)
+  @spec encode!(text :: binary(), container :: binary()) :: binary()
+  def encode!(text, container \\ "🦆") do
+    :ok = ensure_single!(container)
+    (for <<b :: 8 <- to_string(text)>>, do: b)
     |> Enum.map(&byte_to_vs/1)
-    |> List.insert_at(0, container)
+    |> List.insert_at(0, trim(container))
     |> List.to_string()
   end
 
-  def decode(text) do
-    String.to_charlist(text)
+  @spec decode!(container :: binary()) :: binary() | nil
+  def decode!(container) do
+    :ok = ensure_single!(container)
+    String.to_charlist(container)
     |> Enum.drop(1)
     |> Enum.map(&vs_to_byte/1)
+    |> then(fn r -> if(Enum.empty?(r), do: nil, else: to_string(r)) end)
+  end
+
+  @spec scan(text :: binary()) :: list(binary())
+  def scan(text) do
+    text
+    |> String.split("")
+    |> Enum.map(fn l -> decode!(l) end)
+    |> Enum.reject(fn s -> s == "" end)
+  end
+
+  @spec smuggling?(text :: binary()) :: boolean()
+  def smuggling?(text) do
+    !Enum.empty?(scan(text))
+  end
+
+  @spec trim(text :: binary()) :: binary()
+  def trim(text) do
+    text
+    |> String.to_charlist()
+    |> Enum.take(1)
     |> to_string()
   end
 
-  def smuggling?(text) do
-    false
+  ##############################
+
+  @spec ensure_single!(text :: binary()) :: atom()
+  def ensure_single!(text) do
+    if String.length(text) > 1 do
+      raise("More than one container character has been passed!")
+    else
+      :ok
+    end
   end
 
-  def trim(text) do
-    text
-  end
-
+  @spec byte_to_vs(byte :: integer() | binary()) :: integer()
   defp byte_to_vs(byte) when is_binary(byte) do
     :binary.first(byte)
     |> byte_to_vs()
@@ -42,6 +71,7 @@ defmodule UnicodeSmuggler do
     raise "Incorrect value - please pass a byte, not a codepoint"
   end
 
+  @spec vs_to_byte(byte :: integer()) :: binary()
   defp vs_to_byte(vs) when vs in 65024..65039 do
     vs - 65024
     |> :binary.encode_unsigned()
