@@ -3,6 +3,11 @@ defmodule UnicodeSmuggler do
   Documentation for `UnicodeSmuggler`.
   """
 
+  @doc """
+  Hides the text passed as the first parameter in the container character passed as the second parameter.
+
+  If no container character is specified then a duck will be returned.
+  """
   @spec encode!(text :: binary(), container :: binary()) :: binary()
   def encode!(text, container \\ "🦆") do
     :ok = ensure_single!(container)
@@ -12,6 +17,12 @@ defmodule UnicodeSmuggler do
     |> List.to_string()
   end
 
+  @doc """
+  Decodes and returns the hidden text in the specified container character.
+
+  A nil value will be returned if no text has been hidden.
+
+  """
   @spec decode!(container :: binary()) :: binary() | nil
   def decode!(container) do
     :ok = ensure_single!(container)
@@ -21,6 +32,11 @@ defmodule UnicodeSmuggler do
     |> then(fn r -> if(Enum.empty?(r), do: nil, else: to_string(r)) end)
   end
 
+  @doc """
+  Scans a string for hidden text and returns any found fragments in a list.
+
+  If no hidden text is found an empty list will be returned.
+  """
   @spec scan(text :: binary()) :: list(binary())
   def scan(text) do
     text
@@ -29,11 +45,17 @@ defmodule UnicodeSmuggler do
     |> Enum.reject(fn s -> is_nil(s) end)
   end
 
+  @doc """
+  Returns true if hidden text is found in the passed string, otherwise false.
+  """
   @spec smuggling?(text :: binary()) :: boolean()
   def smuggling?(text) do
     !Enum.empty?(scan(text))
   end
 
+  @doc """
+  Accepts a single character and returns it without hidden text. Hopefully.
+  """
   @spec trim(text :: binary()) :: binary()
   def trim(text) do
     :ok = ensure_single!(text)
